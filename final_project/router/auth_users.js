@@ -53,18 +53,33 @@ regd_users.post("/login", (req,res) => {
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const comment = req.params.comment;
+    const comment = req.body.comment;
     let reviews = books[isbn].reviews;
+    let review ={};
+
+    console.log(comment);
+    console.log(reviews);
+    console.log(reviews.length);
 
     if(comment){
-        for(const review of reviews){
-            if(review.reviewer===req.username){
-                review["reviewer"]=req.username;
-                review["comment"]=comment;
-                reviews.push(review);
-                res.send(JSON.stringify(reviews));
+        if(reviews.length>0){
+            for(let i=1; i<=reviews.length; i++){
+                console.log(i+" "+reviews[i]);
+                if(reviews[i].reviewer===req.username){
+                    reviews[i].reviewer=req.username;
+                    reviews[i].comment=comment;
+                }else{
+                    review.reviewer=req.username;
+                    review.comment=comment;
+                    reviews.push(review);
+                }
             }
+        }else{
+            review.reviewer=req.username;
+            review.comment=comment;
+            reviews.push(review);
         }
+        res.send(JSON.stringify(reviews));
     }else{
         res.status(404).json({message:"Invalid or null comment."});
     }
