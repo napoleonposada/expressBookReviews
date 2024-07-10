@@ -21,57 +21,85 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
+/*
 public_users.get('/',function (req, res) {
   res.send(JSON.stringify(books,null,4));
 });
+*/
+
+// Get the book list available in the shop
+public_users.get('/', async function (req, res) {
+  try {
+    const response = await Promise.resolve(books); // Resolve with existing books data
+    res.send(JSON.stringify(response, null, 4)); // Send response
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).send('Internal Server Error'); // Handle errors
+  }
+});
+ 
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-    const isbn = req.params.isbn;
-    res.send(JSON.stringify(books[isbn],null,4));
+public_users.get('/isbn/:isbn',async function (req, res) {
+    try{
+        const isbn = req.params.isbn;
+        const response = await Promise.resolve(books);
+        res.send(JSON.stringify(books[isbn],null,4));
+    }catch(error){
+        console.error('Error fetching book '+isbn, error);
+        res.status(500).send('Internal Server Error'); // Handle errors
+    }
 });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-    const author = req.params.author;
-    let foundBook={};
-    let foundBooks=[{}];
-    let found = false;
-
-    for(let isbn=1;isbn<=Object.keys(books).length;isbn++){
-        if(books[isbn].author===author){
-            found = true;
-            foundBook=books[isbn];
-            foundBooks.push(foundBook);
+public_users.get('/author/:author', async function (req, res) {
+    try{
+        const author = req.params.author;
+        let foundBook={};
+        let foundBooks=[{}];
+        let found = false;
+        const response = await Promise.resolve(books);  // Waiting for the promise resolve
+        for(let isbn=1;isbn<=Object.keys(books).length;isbn++){  // Search in Books for the specified author in params request
+            if(books[isbn].author===author){
+                found = true;                   // flag for a book found. At least, one.
+                foundBook=books[isbn];
+                foundBooks.push(foundBook);     // Add the found book to results list.
+            }
         }
-    }
-    
-    if(found){
-        res.send(JSON.stringify(foundBooks,null,4));
-    }else{
-        return res.status(200).json({message: "Book not found."});        
+        if(found){
+            res.send(JSON.stringify(foundBooks,null,4));
+        }else{
+            return res.status(404).json({message: "Book not found."});        
+        }
+    }catch(error){
+        console.error('Error fetching books.', error);
+        res.status(500).send('Internal Server Error'); // Handle errors
     }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-    const title = req.params.title;
-    let foundBook={};
-    let foundBooks=[{}];
-    let found = false;
-
-    for(let isbn=1;isbn<=Object.keys(books).length;isbn++){
-        if(books[isbn].title===title){
-            found = true;
-            foundBook=books[isbn];
-            foundBooks.push(foundBook);
+public_users.get('/title/:title',async function (req, res) {
+    try{
+        const title = req.params.title;
+        let foundBook={};
+        let foundBooks=[{}];
+        let found = false;
+        const response = await Promise.resolve(books);          // Waiting for the promise resolve
+        for(let isbn=1;isbn<=Object.keys(books).length;isbn++){ // Search in Books for the specified title in params request
+            if(books[isbn].title===title){
+                found = true;                                   // flag for a book found. At least, one.
+                foundBook=books[isbn];
+                foundBooks.push(foundBook);                     // Add the found book to results list.
+            }
         }
-    }
-    
-    if(found){
-        res.send(JSON.stringify(foundBooks,null,4));
-    }else{
-        return res.status(200).json({message: "Book not found."});        
+        if(found){
+            res.send(JSON.stringify(foundBooks,null,4));
+        }else{
+            return res.status(200).json({message: "Book not found."});        
+        }
+    }catch(error){
+        console.error('Error fetching books.', error);
+        res.status(500).send('Internal Server Error'); // Handle errors
     }
 });
 
